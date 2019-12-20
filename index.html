@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Тестовый чат</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,600,700,900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: "Roboto", sans-serif;
+      background: linear-gradient(0deg, #0e2355, #073683);
+    }
+
+    .container {
+      width: 500px;
+      max-height: 600px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+      background-color: black;
+      border-radius: 10px;
+      overflow: hidden;
+      background-image: url(https://mir-s3-cdn-cf.behance.net/project_modules/disp/2d9dd173426833.5c08f5634ff45.png);
+      background-size: contain;
+    }
+
+    .messages-window {
+      width: 100%;
+      height: 300px;
+      color: black;
+      box-sizing: border-box;
+      padding: 20px;
+    }
+
+    .message {
+      padding: 5px 10px 5px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      display: inline-block;
+      margin-bottom: 2px;
+    }
+
+    form {
+      display: flex;
+      margin: 0 10px 10px;
+      background: white;
+      border-radius: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 40px;
+      min-height: 40px;
+      max-height: 100px;
+      resize: vertical;
+      box-sizing: border-box;
+      padding: 12px 10px 0;
+      border-top-left-radius: 20px;
+      border-bottom-left-radius: 20px;
+      font-weight: 500;
+      border: none;
+      outline: none;
+    }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 100%;
+      border: none;
+      outline: none;
+      background-image: url(https://icons-for-free.com/iconfiles/png/512/content+send+icon-1320087227200139227.png);
+      background-size: contain;
+      color: transparent;
+    }
+
+    .user-panel {
+      width: 100%;
+      height: 40px;
+      box-sizing: border-box;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(14, 35, 85, .5);
+      box-shadow: 0 0 20px rgba(167, 167, 167, 0.1);
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .user_profile {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-panel img {
+      width: 30px;
+      height: 30px;
+      margin-left: 5px;
+      border-radius: 100%;
+    }
+
+    .user-panel label {
+      color: white;
+      margin-right: 4px;
+      font-size: 12px;
+    }
+
+    #user_name {
+      width: 100px;
+      background: rgb(235, 235, 235);
+      border: none;
+      box-sizing: border-box;
+      padding: 3px 6px;
+      font-size: 10px;
+    }
+
+    .message-first {
+      background-color: #C5E0FE;
+    }
+
+    .message-second {
+      background-color: #DDDFE0;
+    }
+
+    .message-third {
+      background-color: #CEE9D3;
+    }
+
+    .message-fourth {
+      background-color: #F8D1D3;
+    }
+
+    .message-fifth {
+      background-color: #FFF1C7;
+    }
+
+    .message-sixth {
+      background-color: #CCE9F0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="user-panel">
+      <h5>Chat socket.io</h5>
+      <div class="user_profile">
+        <label for="user_name">Name:</label>
+        <input type="text" id="user_name" placeholder="Your name">
+        <img src="https://cdn.pixabay.com/photo/2016/11/14/17/39/person-1824144_960_720.png" alt="user photo">
+      </div>
+    </div>
+    <div class="messages-window" id="all_messages"></div>
+    <form action="" id="chat_form">
+      <textarea name="message" id="message" cols="30" rows="10" placeholder="Enter message"></textarea>
+      <input type="submit" class="send-btn" placeholder="">
+    </form>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    $(function () {
+      let socket = io.connect();
+      let $form = $("#chat_form");
+      let $textarea = $("#message");
+      let $all_messages = $("#all_messages");
+      let $name = $("#user_name");
+      let min = 1;
+      let max = 6;
+      let random = Math.floor(Math.random() * (max - min)) + min;
+
+      let messageColor;
+      switch (random) {
+        case 1:
+          messageColor = "first";
+          break;
+        case 2:
+          messageColor = "second";
+          break;
+        case 3:
+          messageColor = "third";
+          break;
+        case 4:
+          messageColor = "fourth";
+          break;
+        case 5:
+          messageColor = "fifth";
+          break;
+        case 6:
+          messageColor = "sixth";
+          break;
+      }
+
+      console.log(messageColor);
+
+
+      $form.submit(function (event) {
+        event.preventDefault();
+        socket.emit('send message', {
+          message: $textarea.val(),
+          name: $name.val(),
+          className: messageColor
+        });
+        $textarea.val('');
+      });
+
+      socket.on("add message", function (data) {
+        $all_messages.append(
+          "<div class='message message-" +
+          data.className +
+          "'><b>" +
+          data.name +
+          "</b>: " +
+          data.msg +
+          "</div><br/>"
+        );
+      });
+    });
+  </script>
+
+</body>
+
+</html>
